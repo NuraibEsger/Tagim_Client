@@ -7,6 +7,7 @@ import VehicleDetailPage from './pages/VehicleDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import LandingPage from './pages/LandingPage';
 import PublicVehiclePage from './pages/PublicVehiclePage';
+import ActivateTagPage from './pages/ActivateTagPage';
 
 function App() {
   return (
@@ -35,6 +36,10 @@ function App() {
         
         <Route path="/profile" element={
           localStorage.getItem('token') ? <ProfilePage /> : <Navigate to="/login" />
+        } />
+
+        <Route path="/activateTag" element={
+          localStorage.getItem('token') ? <ActivateTagPage /> : <Navigate to="/login" />
         } />
       </Routes>
     </BrowserRouter>

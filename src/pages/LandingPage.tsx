@@ -160,6 +160,7 @@ export default function LandingPage() {
               </Paper>
             </Box>
           </Box>
+          
 
           {/* How It Works */}
           <Paper

@@ -8,6 +8,7 @@ import ProfilePage from './pages/ProfilePage';
 import LandingPage from './pages/LandingPage';
 import PublicVehiclePage from './pages/PublicVehiclePage';
 import ActivateTagPage from './pages/ActivateTagPage';
+import TagQrGenerator from './pages/TagQrGenerator';
 
 function App() {
   return (
@@ -41,6 +42,10 @@ function App() {
         <Route path="/activateTag" element={
           localStorage.getItem('token') ? <ActivateTagPage /> : <Navigate to="/login" />
         } />
+
+        <Route path="/tagGenerator" element={
+          <TagQrGenerator uniqueCode="TAG-KH1MPQ84" />
+          } />
       </Routes>
     </BrowserRouter>
   );

@@ -104,7 +104,7 @@ export default function ActivateTagPage() {
             {vehicles.map((v) => (
               // vehicleService-dəki Vehicle interface-də 'id' var. 
               // Əgər backend publicId-ni 'id' kimi qaytarırsa, bu düzdür.
-              <MenuItem key={v.id} value={v.id}>
+              <MenuItem key={v.id} value={v.publicId}>
                 {v.make} {v.model} - {v.licensePlate}
               </MenuItem>
             ))}

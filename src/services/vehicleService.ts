@@ -19,6 +19,7 @@ export interface UpdateVehicleRequest {
 
 export interface Vehicle {
   id: string;
+  publicId: string;
   licensePlate: string;
   make: string;
   model: string;

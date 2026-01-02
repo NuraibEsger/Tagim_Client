@@ -9,6 +9,7 @@ import LandingPage from './pages/LandingPage';
 import PublicVehiclePage from './pages/PublicVehiclePage';
 import ActivateTagPage from './pages/ActivateTagPage';
 import TagQrGenerator from './pages/TagQrGenerator';
+import ScanPage from './pages/ScanPage';
 
 function App() {
   return (
@@ -41,6 +42,10 @@ function App() {
 
         <Route path="/activateTag" element={
           localStorage.getItem('token') ? <ActivateTagPage /> : <Navigate to="/login" />
+        } />
+
+        <Route path="/scanpage/:code" element={
+          localStorage.getItem('token') ? <ScanPage /> : <Navigate to="/login" />
         } />
 
         <Route path="/tagGenerator" element={

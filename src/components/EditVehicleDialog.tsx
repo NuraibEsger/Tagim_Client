@@ -126,7 +126,7 @@ export default function EditVehicleDialog({
           <TextField
             label="Əlaqə Nömrəsi"
             name="contactNumber"
-            value={form.contactNumber}
+            value={form.contactNumber.trim()}
             onChange={handleChange}
             fullWidth
             helperText="Nümunə: +994 50 123 45 67"

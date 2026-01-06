@@ -9,6 +9,7 @@ import {
   Card,
   Chip
 } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import Navbar from '../components/Navbar';
 import { vehicleService } from '../services/vehicleService';
 import type { Vehicle } from '../services/vehicleService';
@@ -127,9 +128,25 @@ export default function VehicleDetailPage() {
             Geri Dön
           </Button>
           {isOwner && (
-            <Button variant="outlined" onClick={openEditDialog}>
-              Məlumatları Dəyiş
-            </Button>
+            <Box display="flex" gap={2}>
+              {/* QR Səhifəsinə Redirect Düyməsi */}
+              <Button 
+                variant="contained"
+                startIcon={<VisibilityIcon />}
+                onClick={() => navigate(`/t/${vehicle.publicId}`)}
+                sx={{
+                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                  color: 'white'
+                }}
+              >
+                QR Səhifəsi
+              </Button>
+
+              <Button variant="outlined" onClick={openEditDialog}>
+                Məlumatları Dəyiş
+              </Button>
+            </Box>
           )}
         </Box>
 

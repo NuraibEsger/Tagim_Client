@@ -27,7 +27,7 @@ export interface Vehicle {
   contactNumber: string;
   imageUrl?: string;          // frontend-də istifadə etdiyimiz tam URL
   vehicleImageUrl?: string;   // backend DTO-dan gələn nisbi yol (VehicleImageUrl)
-  ownerUserId?: string;       // backend DTO-ya əlavə etsən, buradan oxuyacağıq
+  userId?: string;       // backend DTO-ya əlavə etsən, buradan oxuyacağıq
 }
 
 const backendOrigin = 'http://localhost:8080';

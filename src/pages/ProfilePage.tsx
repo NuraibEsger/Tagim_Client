@@ -56,15 +56,18 @@ export default function ProfilePage() {
       .filter((l) => l.platform.trim() && l.url.trim())
       .map((l) => ({ platform: l.platform.trim(), url: l.url.trim() }));
 
+    const cleanPhone = editPhone.replace(/\s/g, '');
+
     const next: ProfileOverrides = {
       name: editName.trim(),
-      phone: editPhone.trim(),
+      phone: cleanPhone,
       socialLinks: cleanLinks
     };
 
     const putPayload = {
       fullName: next.name || name,
-      phoneNumber: next.phone || phone
+      phoneNumber: next.phone || phone,
+      socialLinks: cleanLinks
     };
 
     setSaving(true);

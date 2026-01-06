@@ -7,13 +7,7 @@ import {
   Box,
   Button,
   Card,
-  Chip,
-  CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField
+  Chip
 } from '@mui/material';
 import Navbar from '../components/Navbar';
 import { vehicleService } from '../services/vehicleService';
@@ -27,6 +21,7 @@ import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import PaletteIcon from '@mui/icons-material/Palette';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import EditVehicleDialog from '../components/EditVehicleDialog';
 
 export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -35,7 +30,6 @@ export default function VehicleDetailPage() {
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({
     licensePlate: '',
     make: '',
@@ -102,63 +96,17 @@ export default function VehicleDetailPage() {
     setEditOpen(true);
   };
 
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const handleVehicleUpdated = (updatedVehicle: Vehicle) => {
+    setVehicle(updatedVehicle); // UI-ı dərhal yenilə
   };
 
-  const handleSaveVehicle = async () => {
-    if (!vehicle) return;
-
-    try {
-      setSaving(true);
-      await vehicleService.update({
-        id: Number(vehicle.id),
-        licensePlate: form.licensePlate,
-        make: form.make,
-        model: form.model,
-        color: form.color,
-        contactNumber: form.contactNumber,
-      });
-
-      setVehicle({
-        ...vehicle,
-        licensePlate: form.licensePlate,
-        make: form.make,
-        model: form.model,
-        color: form.color,
-        contactNumber: form.contactNumber,
-      });
-
-      toast.success('Avtomobil məlumatları yeniləndi');
-      setEditOpen(false);
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error?.response?.data?.detail || 'Məlumatlar yenilənmədi');
-    } finally {
-      setSaving(false);
-    }
-  };  
-
-  if (loading) {
-    return (
-      <>
-        <Navbar />
-        <Container maxWidth="md" sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress size={60} sx={{ color: '#667eea' }} />
-        </Container>
-      </>
-    );
-  }
-
-  if (!vehicle) {
-    return null;
-  }
+  if (loading) return <Navbar />; // Sadələşdirmə
+  if (!vehicle) return null;
 
   const isOwner =
     !!currentUser?.userId &&
-    !!vehicle.ownerUserId &&
-    String(currentUser.userId) === String(vehicle.ownerUserId);
+    !!vehicle.userId &&
+    String(currentUser.userId) === String(vehicle.userId);
 
   return (
     <>
@@ -506,58 +454,14 @@ export default function VehicleDetailPage() {
         </Box>
       </Container>
 
-      <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Avtomobil Məlumatlarını Yenilə</DialogTitle>
-        <DialogContent dividers>
-          <Box display="flex" flexDirection="column" gap={2} sx={{ mt: 1 }}>
-            <TextField
-              label="Dövlət Nömrə Nişanı"
-              name="licensePlate"
-              value={form.licensePlate}
-              onChange={handleFormChange}
-              fullWidth
-            />
-            <Box display="flex" gap={2}>
-              <TextField
-                label="Marka"
-                name="make"
-                value={form.make}
-                onChange={handleFormChange}
-                fullWidth
-              />
-              <TextField
-                label="Model"
-                name="model"
-                value={form.model}
-                onChange={handleFormChange}
-                fullWidth
-              />
-            </Box>
-            <TextField
-              label="Rəng"
-              name="color"
-              value={form.color}
-              onChange={handleFormChange}
-              fullWidth
-            />
-            <TextField
-              label="Əlaqə Nömrəsi"
-              name="contactNumber"
-              value={form.contactNumber}
-              onChange={handleFormChange}
-              fullWidth
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditOpen(false)} color="inherit">
-            Ləğv et
-          </Button>
-          <Button variant="contained" onClick={handleSaveVehicle} disabled={saving}>
-            {saving ? 'Yüklənir...' : 'Yadda saxla'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {vehicle && (
+        <EditVehicleDialog 
+          open={editOpen}
+          onClose={() => setEditOpen(false)}
+          vehicle={vehicle}
+          onVehicleUpdated={handleVehicleUpdated}
+        />
+      )}
     </>
   );
 }

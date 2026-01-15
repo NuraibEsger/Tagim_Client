@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { vehicleService, type Vehicle } from '../services/vehicleService';
 import toast from 'react-hot-toast';
+import { handleApiError } from '../utils/errorHandler';
 
 interface EditVehicleDialogProps {
   open: boolean;
@@ -73,7 +74,7 @@ export default function EditVehicleDialog({
       onClose();
     } catch (error: any) {
       console.error(error);
-      toast.error(error?.response?.data?.detail || 'Xəta baş verdi');
+      handleApiError(error, 'Avtomobil məlumatları yenilənərkən xəta baş verdi.');
     } finally {
       setLoading(false);
     }

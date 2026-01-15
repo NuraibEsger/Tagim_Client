@@ -11,6 +11,7 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import PaletteIcon from '@mui/icons-material/Palette';
 import PhoneIcon from '@mui/icons-material/Phone';
+import { handleApiError } from '../utils/errorHandler';
 
 interface Props {
   open: boolean;
@@ -45,7 +46,7 @@ export default function AddVehicleDialog({ open, onClose, onVehicleAdded }: Prop
         onVehicleAdded();
       }
     } catch (error: any) {
-      toast.error(error.response?.data?.detail || 'Xəta baş verdi');
+      handleApiError(error, 'Avtomobil əlavə edilərkən xəta baş verdi.');
     }
   };
 

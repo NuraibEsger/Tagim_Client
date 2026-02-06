@@ -18,6 +18,21 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import PaletteIcon from '@mui/icons-material/Palette';
 import PhoneIcon from '@mui/icons-material/Phone';
+// Digər importların yanına əlavə edin
+import InstagramIcon from '@mui/icons-material/Instagram';
+import FacebookIcon from '@mui/icons-material/Facebook';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import TelegramIcon from '@mui/icons-material/Telegram';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import YouTubeIcon from '@mui/icons-material/YouTube';
+import LanguageIcon from '@mui/icons-material/Language'; // Web sayt üçün
+import { IconButton, Tooltip } from '@mui/material'; // Tooltip və IconButton lazımdır
+
+interface SocialMediaLink {
+  platformName: string;
+  url: string;
+}
 
 interface PublicVehicle {
   make: string;
@@ -26,9 +41,10 @@ interface PublicVehicle {
   color: string;
   contactNumber: string;
   vehicleImageUrl?: string;
-  imageUrl?: string; // tam URL
+  imageUrl?: string;
   userFullName: string;
   userProfilePictureUrl: string;
+  socialMediaLinks: SocialMediaLink[];
 }
 
 const backendOrigin = 'http://localhost:8080';
@@ -79,7 +95,9 @@ export default function PublicVehiclePage() {
         </Container>
       </>
     );
-  }  
+  }
+
+  console.log(vehicle)
 
   if (!vehicle) {
     return (
@@ -95,6 +113,37 @@ export default function PublicVehiclePage() {
       </>
     );
   }
+
+  const getPlatformIcon = (platformName: string) => {
+    const name = platformName.toLowerCase();
+
+    switch (name) {
+      case 'instagram': return <InstagramIcon />;
+      case 'facebook': return <FacebookIcon />;
+      case 'linkedin': return <LinkedInIcon />;
+      case 'twitter':
+      case 'x': return <TwitterIcon />;
+      case 'telegram': return <TelegramIcon />;
+      case 'whatsapp': return <WhatsAppIcon />;
+      case 'youtube': return <YouTubeIcon />;
+      default: return <LanguageIcon />; // Tanınmayanlar üçün qlobus ikonu
+    }
+  };
+
+  // İkon rənglərini təyin etmək üçün (İstəyə bağlı)
+  const getPlatformColor = (platformName: string) => {
+    const name = platformName.toLowerCase();
+    switch (name) {
+      case 'instagram': return '#E1306C';
+      case 'facebook': return '#1877F2';
+      case 'linkedin': return '#0077B5';
+      case 'twitter': return '#1DA1F2';
+      case 'whatsapp': return '#25D366';
+      case 'youtube': return '#FF0000';
+      case 'telegram': return '#0088cc';
+      default: return '#667eea';
+    }
+  };
 
   return (
     <>
@@ -307,6 +356,47 @@ export default function PublicVehiclePage() {
                   <PhoneIcon sx={{ mr: 1 }} />
                   {vehicle.contactNumber}
                 </Button>
+                <Box>
+                </Box>
+                {vehicle.socialMediaLinks && vehicle.socialMediaLinks.length > 0 && (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'center',
+                      gap: 2,
+                      flexWrap: 'wrap',
+                      mt: 2
+                    }}
+                  >
+                    {vehicle.socialMediaLinks.map((social, index) => (
+                      <Tooltip key={index} title={social.platformName} arrow>
+                        <IconButton
+                          component="a"
+                          href={social.url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          sx={{
+                            color: getPlatformColor(social.platformName),
+                            backgroundColor: 'rgba(255,255,255,0.8)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                            border: `1px solid ${getPlatformColor(social.platformName)}`,
+                            width: 48,
+                            height: 48,
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              backgroundColor: getPlatformColor(social.platformName),
+                              color: '#fff',
+                              transform: 'translateY(-3px)',
+                              boxShadow: '0 6px 15px rgba(0,0,0,0.2)'
+                            }
+                          }}
+                        >
+                          {getPlatformIcon(social.platformName)}
+                        </IconButton>
+                      </Tooltip>
+                    ))}
+                  </Box>
+                )}
               </Box>
             )}
           </Paper>

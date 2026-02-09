@@ -1,12 +1,15 @@
 import { AppBar, Toolbar, Typography, Button, Box, Avatar, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DirectionsCarFilledIcon from '@mui/icons-material/DirectionsCarFilled';
-import { getUserFromToken } from '../services/authService';
+import { logout } from '../store/slices/authSlice';
+import type { RootState } from '../store/store';
 
 export default function Navbar() {
   const navigate = useNavigate();
-  const user = getUserFromToken();
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.auth.user);
   const avatarText = user?.name?.[0]?.toUpperCase?.() || 'U';
   let profileImageUrl: string | undefined;
 
@@ -21,7 +24,7 @@ export default function Navbar() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    dispatch(logout());
     navigate('/login');
   };
 
@@ -30,8 +33,8 @@ export default function Navbar() {
   };
 
   return (
-    <AppBar 
-      position="static" 
+    <AppBar
+      position="static"
       sx={{
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
@@ -49,10 +52,10 @@ export default function Navbar() {
           }}
         >
           <DirectionsCarFilledIcon sx={{ fontSize: 32, mr: 1.5 }} />
-          <Typography 
-            variant="h5" 
-            component="div" 
-            sx={{ 
+          <Typography
+            variant="h5"
+            component="div"
+            sx={{
               fontWeight: 'bold',
               background: 'linear-gradient(45deg, #fff 30%, #f0f0f0 90%)',
               WebkitBackgroundClip: 'text',
@@ -61,7 +64,7 @@ export default function Navbar() {
             }}
           >
             Tagim.az
-        </Typography>
+          </Typography>
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <IconButton
@@ -89,9 +92,9 @@ export default function Navbar() {
               {!profileImageUrl && avatarText}
             </Avatar>
           </IconButton>
-          <Button 
-            color="inherit" 
-            onClick={handleLogout} 
+          <Button
+            color="inherit"
+            onClick={handleLogout}
             startIcon={<LogoutIcon />}
             sx={{
               px: 3,

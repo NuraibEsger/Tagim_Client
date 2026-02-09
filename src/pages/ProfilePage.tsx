@@ -1,25 +1,35 @@
 import { useEffect, useState } from 'react';
-import { 
+import {
   Box, Container, Paper, Typography, Avatar, Button, Chip, Link,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, CircularProgress
 } from '@mui/material';
 import Navbar from '../components/Navbar';
 import LogoutIcon from '@mui/icons-material/Logout';
 import EditIcon from '@mui/icons-material/Edit';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getUserFromToken } from '../services/authService';
-import { profileService } from '../services/profileService';
+import { profileService } from '../services/profileService'; // Service-də getProfile olmalıdır
+import { useDispatch } from 'react-redux';
+import { logout } from '../store/slices/authSlice';
 import toast from 'react-hot-toast';
 
-type SocialLink = { platform: string; url: string };
-type ProfileOverrides = { name?: string; phone?: string; imageUrl?: string; socialLinks?: SocialLink[] };
+// Tipləri dəqiqləşdiririk
+type SocialLink = { platformName: string; url: string; isVisible?: boolean }; // Backend DTO ilə eyni olmalıdır
+
+interface UserProfile {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  profileImageUrl?: string;
+  socialLinks: SocialLink[];
+}
 
 export default function ProfilePage() {
-  const user = getUserFromToken();
-  const email = user?.email || 'email mövcud deyil';
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
 
-  const [overrides, setOverrides] = useState<ProfileOverrides>({});
+  // Edit State-ləri
   const [editOpen, setEditOpen] = useState(false);
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
@@ -27,69 +37,64 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // 1. Səhifə açılanda Databazadan ən son məlumatı çək
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('userProfileOverrides');
-      if (stored) {
-        const parsed: ProfileOverrides = JSON.parse(stored);
-        setOverrides(parsed);
-      }
-    } catch {
-      /* ignore parse errors */
-    }
+    fetchProfileData();
   }, []);
-  const name = overrides.name || user?.name || 'İstifadəçi';
-  const phone = overrides.phone || user?.phone || 'Telefon mövcud deyil';
-  const socialLinks: SocialLink[] = overrides.socialLinks || [];
-  const profileImageUrl = overrides.imageUrl || '';
 
+  const fetchProfileData = async () => {
+    try {
+      setLoading(true);
+      // Bu metod backend-dəki GET /api/users/profile endpoint-nə getməlidir
+      const data = await profileService.getProfile();
+      setProfile(data);
+    } catch (error) {
+      console.error(error);
+      toast.error('Profil məlumatlarını yükləmək mümkün olmadı');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openEditDialog = () => {
-    setEditName(overrides.name || user?.name || '');
-    setEditPhone(overrides.phone || user?.phone || '');
-    setEditLinks([...socialLinks]);
+    if (!profile) return;
+    setEditName(profile.fullName || '');
+    setEditPhone(profile.phoneNumber || '');
+    // Referansı qırmaq üçün kopyalayırıq
+    setEditLinks(profile.socialLinks.map(link => ({ ...link })) || []);
     setEditOpen(true);
   };
 
-  const saveOverrides = () => {
+  const saveProfile = async () => {
+    // Validasiya
     const cleanLinks = editLinks
-      .filter((l) => l.platform.trim() && l.url.trim())
-      .map((l) => ({ platform: l.platform.trim(), url: l.url.trim() }));
-
-    const cleanPhone = editPhone.replace(/\s/g, '');
-
-    const next: ProfileOverrides = {
-      name: editName.trim(),
-      phone: cleanPhone,
-      socialLinks: cleanLinks
-    };
+      .filter((l) => l.platformName.trim() && l.url.trim())
+      .map((l) => ({ platformName: l.platformName.trim(), url: l.url.trim(), isVisible: true }));
 
     const putPayload = {
-      fullName: next.name || name,
-      phoneNumber: next.phone || phone,
-      socialLinks: cleanLinks
+      fullName: editName.trim(),
+      phoneNumber: editPhone.trim(),
+      socialMedia: cleanLinks
     };
 
     setSaving(true);
-    profileService.updateProfile(putPayload)
-      .then(() => {
-        localStorage.setItem('userProfileOverrides', JSON.stringify(next));
-        setOverrides(next);
-        setEditOpen(false);
-        toast.success('Məlumatlar yeniləndi');
-      })
-      .catch((error: any) => {
-        toast.error(error?.response?.data?.detail || 'Yeniləmə alınmadı');
-        console.error(error);
-      })
-      .finally(() => setSaving(false));
+    try {
+      await profileService.updateProfile(putPayload);
+      toast.success('Məlumatlar yeniləndi');
+      setEditOpen(false);
+
+      // Vacib hissə: Uğurlu olduqdan sonra datanı yenidən çəkirik (və ya state-i əl ilə yeniləyirik)
+      fetchProfileData();
+      // Və ya sadəcə: setProfile({ ...profile!, ...putPayload });
+    } catch (error: any) {
+      toast.error(error?.response?.data?.detail || 'Yeniləmə alınmadı');
+      console.error(error);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const addLink = () => setEditLinks((prev) => [...prev, { platform: '', url: '' }]);
-  const removeLink = (idx: number) => setEditLinks((prev) => prev.filter((_, i) => i !== idx));
-  const updateLink = (idx: number, key: keyof SocialLink, value: string) =>
-    setEditLinks((prev) => prev.map((l, i) => i === idx ? { ...l, [key]: value } : l));
-
+  // Şəkil yükləmə
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -98,128 +103,94 @@ export default function ProfilePage() {
       setUploadingImage(true);
       const imageUrl = await profileService.uploadProfileImage(file);
 
-      const next: ProfileOverrides = {
-        ...overrides,
-        imageUrl,
-      };
-
-      localStorage.setItem('userProfileOverrides', JSON.stringify(next));
-      setOverrides(next);
+      // State-i yeniləyirik ki, şəkil dərhal görünsün
+      if (profile) {
+        setProfile({ ...profile, profileImageUrl: imageUrl });
+      }
       toast.success('Profil şəkli yeniləndi');
     } catch (error: any) {
-      console.error(error);
-      toast.error(error?.response?.data?.detail || 'Şəkli yükləmək mümkün olmadı');
+      toast.error('Şəkli yükləmək mümkün olmadı');
     } finally {
       setUploadingImage(false);
       event.target.value = '';
     }
   };
 
+  // Helper funksiyalar
+  const addLink = () => setEditLinks((prev) => [...prev, { platformName: '', url: '' }]);
+  const removeLink = (idx: number) => setEditLinks((prev) => prev.filter((_, i) => i !== idx));
+  const updateLink = (idx: number, key: keyof SocialLink, value: string) =>
+    setEditLinks((prev) => prev.map((l, i) => i === idx ? { ...l, [key]: value } : l));
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <Container sx={{ mt: 10, display: 'flex', justifyContent: 'center' }}>
+          <CircularProgress />
+        </Container>
+      </>
+    );
+  }
+
+  if (!profile) return null; // Və ya error mesajı
+
   return (
     <>
       <Navbar />
       <Container maxWidth="sm" sx={{ mt: 4, mb: 6 }}>
-        <Paper
-          sx={{
-            p: 4,
-            borderRadius: 4,
-            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%)',
-            border: '1px solid rgba(102, 126, 234, 0.2)',
-            boxShadow: '0 12px 40px rgba(102, 126, 234, 0.15)'
-          }}
-        >
+        <Paper sx={{ p: 4, borderRadius: 4 /* ... styles */ }}>
           <Box display="flex" flexDirection="column" alignItems="center" gap={2.5}>
+
+            {/* Avatar Section */}
             <Box position="relative">
               <Avatar
-                src={profileImageUrl || undefined}
-                sx={{
-                  width: 96,
-                  height: 96,
-                  fontSize: 32,
-                  fontWeight: 'bold',
-                  background: profileImageUrl
-                    ? 'transparent'
-                    : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                }}
+                src={profile.profileImageUrl}
+                sx={{ width: 96, height: 96, fontSize: 32, bgcolor: '#667eea' }}
               >
-                {!profileImageUrl && name.charAt(0).toUpperCase()}
+                {!profile.profileImageUrl && profile.fullName?.charAt(0).toUpperCase()}
               </Avatar>
-              <Button
-                component="label"
-                size="small"
-                variant="outlined"
-                sx={{
-                  mt: 1,
-                  fontSize: '0.75rem'
-                }}
-              >
+              <Button component="label" size="small" variant="outlined" sx={{ mt: 1 }}>
                 {uploadingImage ? 'Yüklənir...' : 'Şəkli dəyiş'}
-                <input
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png"
-                  hidden
-                  onChange={handleImageChange}
-                />
+                <input type="file" hidden accept="image/*" onChange={handleImageChange} />
               </Button>
-            </Box>
-            <Box textAlign="center">
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
-                {name}
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                {email}
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {phone}
-              </Typography>
             </Box>
 
+            {/* Info Section */}
+            <Box textAlign="center">
+              <Typography variant="h5" fontWeight="bold">{profile.fullName}</Typography>
+              <Typography variant="body1" color="text.secondary">{profile.email}</Typography>
+              <Typography variant="body2" color="text.secondary">{profile.phoneNumber}</Typography>
+            </Box>
+
+            {/* Buttons */}
             <Box display="flex" gap={2} width="100%" mt={1}>
-              <Button
-                fullWidth
-                variant="contained"
-                startIcon={<EditIcon />}
-                onClick={openEditDialog}
-                sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  '&:hover': { background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)' }
-                }}
-              >
+              <Button fullWidth variant="contained" startIcon={<EditIcon />} onClick={openEditDialog}>
                 Məlumatları Yenilə
               </Button>
-              <Button
-                fullWidth
-                variant="outlined"
-                startIcon={<LogoutIcon />}
-                onClick={() => {
-                  localStorage.removeItem('token');
-                  window.location.href = '/login';
-                }}
-              >
+              <Button fullWidth variant="outlined" startIcon={<LogoutIcon />} onClick={() => {
+                dispatch(logout());
+                window.location.href = '/login';
+              }}>
                 Çıxış
               </Button>
             </Box>
 
-            {/* Sosial Şəbəkələr */}
+            {/* Social Links Display */}
             <Box width="100%">
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Sosial şəbəkələr
-              </Typography>
-              {socialLinks.length === 0 ? (
-                <Typography variant="body2" color="text.secondary">
-                  Hələ sosial link əlavə edilməyib.
-                </Typography>
+              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>Sosial şəbəkələr</Typography>
+              {!profile.socialLinks?.length ? (
+                <Typography variant="body2" color="text.secondary">Hələ sosial link əlavə edilməyib.</Typography>
               ) : (
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {socialLinks.map((item, idx) => (
+                  {profile.socialLinks.map((item, idx) => (
                     <Chip
                       key={idx}
-                      label={item.platform}
+                      label={item.platformName}
                       component={Link}
                       href={item.url}
                       target="_blank"
                       clickable
-                      sx={{ background: 'rgba(102,126,234,0.1)', borderColor: 'rgba(102,126,234,0.3)' }}
                     />
                   ))}
                 </Box>
@@ -229,67 +200,30 @@ export default function ProfilePage() {
         </Paper>
       </Container>
 
+      {/* Edit Dialog (field adlarını state-ə uyğunlaşdırın) */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth maxWidth="sm">
         <DialogTitle>Məlumatları Yenilə</DialogTitle>
         <DialogContent dividers>
-          <Box display="flex" flexDirection="column" gap={3} sx={{ mt: 1 }}>
-            <TextField
-              label="Ad Soyad"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              placeholder="Adınızı daxil edin"
-              fullWidth
-            />
-            <TextField
-              label="Telefon"
-              value={editPhone}
-              onChange={(e) => setEditPhone(e.target.value)}
-              placeholder="+994..."
-              fullWidth
-            />
+          <Box display="flex" flexDirection="column" gap={3} mt={1}>
+            <TextField label="Ad Soyad" value={editName} onChange={(e) => setEditName(e.target.value)} fullWidth />
+            <TextField label="Telefon" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} fullWidth />
 
-            <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="subtitle1" fontWeight="bold">Sosial linklər</Typography>
-              <Button startIcon={<AddIcon />} onClick={addLink} size="small">
-                Əlavə et
-              </Button>
-            </Box>
-
-            {editLinks.length === 0 && (
-              <Typography variant="body2" color="text.secondary">
-                Hələ link əlavə edilməyib.
-              </Typography>
-            )}
-
-            <Box display="flex" flexDirection="column" gap={2}>
-              {editLinks.map((link, idx) => (
-                <Box key={idx} display="grid" gridTemplateColumns="1fr 1fr auto" gap={1}>
-                  <TextField
-                    label="Platforma"
-                    value={link.platform}
-                    onChange={(e) => updateLink(idx, 'platform', e.target.value)}
-                  />
-                  <TextField
-                    label="URL"
-                    value={link.url}
-                    onChange={(e) => updateLink(idx, 'url', e.target.value)}
-                  />
-                  <IconButton onClick={() => removeLink(idx)} aria-label="Sil">
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              ))}
-            </Box>
+            {/* Link Edit Loop */}
+            {editLinks.map((link, idx) => (
+              <Box key={idx} display="flex" gap={1}>
+                <TextField label="Platforma" value={link.platformName} onChange={(e) => updateLink(idx, 'platformName', e.target.value)} />
+                <TextField label="URL" value={link.url} onChange={(e) => updateLink(idx, 'url', e.target.value)} fullWidth />
+                <IconButton onClick={() => removeLink(idx)}><DeleteIcon /></IconButton>
+              </Box>
+            ))}
+            <Button startIcon={<AddIcon />} onClick={addLink}>Əlavə et</Button>
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditOpen(false)} color="inherit">Ləğv et</Button>
-          <Button variant="contained" onClick={saveOverrides} disabled={saving}>
-            {saving ? 'Yüklənir...' : 'Yadda saxla'}
-          </Button>
+          <Button onClick={() => setEditOpen(false)}>Ləğv et</Button>
+          <Button variant="contained" onClick={saveProfile} disabled={saving}>Yadda saxla</Button>
         </DialogActions>
       </Dialog>
     </>
   );
 }
-

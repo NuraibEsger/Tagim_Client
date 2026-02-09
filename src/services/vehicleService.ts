@@ -30,7 +30,7 @@ export interface Vehicle {
   userId?: string;       // backend DTO-ya əlavə etsən, buradan oxuyacağıq
 }
 
-const backendOrigin = 'http://localhost:8080';
+const backendOrigin = import.meta.env.VITE_API_URL;
 
 // Backend-dən gələn vehicledən imageUrl-i normalize edirik
 const normalizeVehicle = (vehicle: Vehicle): Vehicle => {

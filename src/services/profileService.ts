@@ -1,5 +1,21 @@
 import axiosClient from '../api/axiosClient';
 
+const api = import.meta.env.VITE_API_URL;
+
+export interface SocialLink {
+  platformName: string;
+  url: string;
+  isVisible: boolean;
+}
+
+export interface UserProfile {
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  profileImageUrl?: string;
+  socialLinks: SocialLink[];
+}
+
 export interface UpdateProfileRequest {
   fullName: string;
   phoneNumber: string;
@@ -10,6 +26,21 @@ export interface UploadProfileImageResponse {
 }
 
 export const profileService = {
+  getProfile: async (): Promise<UserProfile> => {
+    const response = await axiosClient.get<UserProfile>('/Profile/profile');
+    const data = response.data;
+
+    if (data.profileImageUrl) {
+      const isAbsolute = data.profileImageUrl.startsWith('http://') || data.profileImageUrl.startsWith('https://')
+
+      if (!isAbsolute) {
+        data.profileImageUrl = `${api}${data.profileImageUrl}`;
+      }
+    }
+
+    return data;
+  },
+
   updateProfile: async (data: UpdateProfileRequest) => {
     const response = await axiosClient.put('/Profile', data);
     return response.data;
@@ -35,8 +66,7 @@ export const profileService = {
     }
 
     // DEV üçün backend origin-i burda sərt yazırıq. Lazım olsa .env-ə çıxarmaq olar.
-    const backendOrigin = 'http://localhost:8080';
-    return backendOrigin + relativePath;
+    return api + relativePath;
   },
 };
 

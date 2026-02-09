@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { 
-  Container, Paper, Typography, TextField, Button, Box, Link 
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '../store/slices/authSlice';
+import {
+  Container, Paper, Typography, TextField, Button, Box, Link
 } from '@mui/material';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { authService } from '../services/authService';
@@ -15,12 +17,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  const dispatch = useDispatch();
+
   const handleLogin = async () => {
     try {
       const data = await authService.login({ email, password });
-      
-      localStorage.setItem('token', data.token);
-      
+
+      dispatch(setCredentials({ token: data.token }));
+
       toast.success('Xoş gəldiniz!');
       navigate('/dashboard');
     } catch (error: any) {
@@ -55,11 +59,11 @@ export default function LoginPage() {
       }}
     >
       <Container maxWidth="xs" sx={{ position: 'relative', zIndex: 1 }}>
-        <Paper 
-          elevation={24} 
-          sx={{ 
-            p: 5, 
-            width: '100%', 
+        <Paper
+          elevation={24}
+          sx={{
+            p: 5,
+            width: '100%',
             borderRadius: 4,
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(10px)',
@@ -71,9 +75,9 @@ export default function LoginPage() {
           }}
         >
           <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <DirectionsCarFilledIcon 
-              sx={{ 
-                fontSize: 60, 
+            <DirectionsCarFilledIcon
+              sx={{
+                fontSize: 60,
                 color: '#667eea',
                 mb: 2,
                 animation: 'bounce 2s infinite',
@@ -81,11 +85,11 @@ export default function LoginPage() {
                   '0%, 100%': { transform: 'translateY(0)' },
                   '50%': { transform: 'translateY(-10px)' }
                 }
-              }} 
+              }}
             />
-            <Typography 
-              variant="h4" 
-              fontWeight="bold" 
+            <Typography
+              variant="h4"
+              fontWeight="bold"
               gutterBottom
               sx={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -94,20 +98,20 @@ export default function LoginPage() {
                 backgroundClip: 'text'
               }}
             >
-          Daxil Ol
-        </Typography>
+              Daxil Ol
+            </Typography>
             <Typography variant="body2" color="text.secondary">
-          Tagim hesabınıza giriş edin
-        </Typography>
+              Tagim hesabınıza giriş edin
+            </Typography>
           </Box>
 
-        <Box component="form" noValidate autoComplete="off">
-          <TextField
-            fullWidth
-            label="Email"
-            margin="normal"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+          <Box component="form" noValidate autoComplete="off">
+            <TextField
+              fullWidth
+              label="Email"
+              margin="normal"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <EmailIcon sx={{ color: '#667eea', mr: 1 }} />
@@ -123,14 +127,14 @@ export default function LoginPage() {
                   }
                 }
               }}
-          />
-          <TextField
-            fullWidth
-            label="Şifrə"
-            type="password"
-            margin="normal"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            />
+            <TextField
+              fullWidth
+              label="Şifrə"
+              type="password"
+              margin="normal"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <LockIcon sx={{ color: '#667eea', mr: 1 }} />
@@ -146,15 +150,15 @@ export default function LoginPage() {
                   }
                 }
               }}
-          />
+            />
 
-          <Button 
-            fullWidth 
-            variant="contained" 
-            size="large" 
+            <Button
+              fullWidth
+              variant="contained"
+              size="large"
               startIcon={<LoginIcon />}
-              sx={{ 
-                mt: 4, 
+              sx={{
+                mt: 4,
                 mb: 2,
                 py: 1.5,
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -166,15 +170,15 @@ export default function LoginPage() {
                 },
                 transition: 'all 0.3s ease'
               }}
-            onClick={handleLogin}
-          >
-            Giriş Et
-          </Button>
+              onClick={handleLogin}
+            >
+              Giriş Et
+            </Button>
 
             <Box textAlign="center" mt={3}>
-              <Link 
-                component={RouterLink} 
-                to="/register" 
+              <Link
+                component={RouterLink}
+                to="/register"
                 variant="body2"
                 sx={{
                   color: '#667eea',
@@ -186,12 +190,12 @@ export default function LoginPage() {
                   transition: 'color 0.3s ease'
                 }}
               >
-              Hesabınız yoxdur? Qeydiyyatdan keçin
-            </Link>
+                Hesabınız yoxdur? Qeydiyyatdan keçin
+              </Link>
+            </Box>
           </Box>
-        </Box>
-      </Paper>
-    </Container>
+        </Paper>
+      </Container>
     </Box>
   );
 }

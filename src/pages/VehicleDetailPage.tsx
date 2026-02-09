@@ -13,7 +13,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import Navbar from '../components/Navbar';
 import { vehicleService } from '../services/vehicleService';
 import type { Vehicle } from '../services/vehicleService';
-import { getUserFromToken } from '../services/authService';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../store/store';
 import toast from 'react-hot-toast';
 import DirectionsCarFilledIcon from '@mui/icons-material/DirectionsCarFilled';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -31,14 +32,11 @@ export default function VehicleDetailPage() {
   const [loading, setLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
-  const [form, setForm] = useState({
-    licensePlate: '',
-    make: '',
-    model: '',
-    color: '',
-    contactNumber: '',
-  });
-  const currentUser = getUserFromToken();
+
+
+  /* State cleanup done */
+
+  const currentUser = useSelector((state: RootState) => state.auth.user);
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -87,13 +85,6 @@ export default function VehicleDetailPage() {
 
   const openEditDialog = () => {
     if (!vehicle) return;
-    setForm({
-      licensePlate: vehicle.licensePlate,
-      make: vehicle.make,
-      model: vehicle.model,
-      color: vehicle.color,
-      contactNumber: vehicle.contactNumber,
-    });
     setEditOpen(true);
   };
 
@@ -130,7 +121,7 @@ export default function VehicleDetailPage() {
           {isOwner && (
             <Box display="flex" gap={2}>
               {/* QR Səhifəsinə Redirect Düyməsi */}
-              <Button 
+              <Button
                 variant="contained"
                 startIcon={<VisibilityIcon />}
                 onClick={() => navigate(`/t/${vehicle.publicId}`)}
@@ -151,11 +142,11 @@ export default function VehicleDetailPage() {
         </Box>
 
         {/* Avtomobil Detalları */}
-        <Box 
-          sx={{ 
-            display: 'grid', 
+        <Box
+          sx={{
+            display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: '1fr 2fr' },
-            gap: 4 
+            gap: 4
           }}
         >
           {/* Sol tərəf - İkon və əsas məlumat */}
@@ -301,11 +292,11 @@ export default function VehicleDetailPage() {
                 </Card>
 
                 {/* Marka və Model */}
-                <Box 
-                  sx={{ 
-                    display: 'grid', 
+                <Box
+                  sx={{
+                    display: 'grid',
                     gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                    gap: 2 
+                    gap: 2
                   }}
                 >
                   <Box>
@@ -472,7 +463,7 @@ export default function VehicleDetailPage() {
       </Container>
 
       {vehicle && (
-        <EditVehicleDialog 
+        <EditVehicleDialog
           open={editOpen}
           onClose={() => setEditOpen(false)}
           vehicle={vehicle}

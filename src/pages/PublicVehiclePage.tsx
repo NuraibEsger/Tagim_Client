@@ -43,7 +43,7 @@ interface PublicVehicle {
   vehicleImageUrl?: string;
   imageUrl?: string;
   userFullName: string;
-  userProfilePictureUrl: string;
+  userProfileImageUrl: string;
   socialMediaLinks: SocialMediaLink[];
 }
 
@@ -72,6 +72,10 @@ export default function PublicVehiclePage() {
           imageUrl = raw.vehicleImageUrl.startsWith('http://') || raw.vehicleImageUrl.startsWith('https://')
             ? raw.vehicleImageUrl
             : backendOrigin + raw.vehicleImageUrl;
+        }
+
+        if (raw.userProfileImageUrl && !raw.userProfileImageUrl.startsWith('http')) {
+          raw.userProfileImageUrl = backendOrigin + raw.userProfileImageUrl;
         }
 
         setVehicle({ ...raw, imageUrl });
@@ -213,7 +217,7 @@ export default function PublicVehiclePage() {
           <Box sx={{ position: 'relative' }}>
             <Box
               component="img"
-              src={vehicle.userProfilePictureUrl || "https://ui-avatars.com/api/?name=" + (vehicle.userFullName || "Driver") + "&background=random"}
+              src={vehicle.userProfileImageUrl || "https://ui-avatars.com/api/?name=" + (vehicle.userFullName || "Driver") + "&background=random"}
               sx={{
                 width: 60,
                 height: 60,

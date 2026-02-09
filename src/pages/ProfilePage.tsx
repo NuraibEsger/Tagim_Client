@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
   Box, Container, Paper, Typography, Avatar, Button, Chip, Link,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, CircularProgress
+  Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, CircularProgress,
+  Switch, FormControlLabel
 } from '@mui/material';
 import Navbar from '../components/Navbar';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -14,7 +15,7 @@ import { logout } from '../store/slices/authSlice';
 import toast from 'react-hot-toast';
 
 // Tipləri dəqiqləşdiririk
-type SocialLink = { platformName: string; url: string; isVisible?: boolean }; // Backend DTO ilə eyni olmalıdır
+type SocialLink = { id?: number; platformName: string; url: string; isVisible?: boolean }; // Backend DTO ilə eyni olmalıdır
 
 interface UserProfile {
   fullName: string;
@@ -69,7 +70,12 @@ export default function ProfilePage() {
     // Validasiya
     const cleanLinks = editLinks
       .filter((l) => l.platformName.trim() && l.url.trim())
-      .map((l) => ({ platformName: l.platformName.trim(), url: l.url.trim(), isVisible: true }));
+      .map((l) => ({
+        id: l.id || 0,
+        platformName: l.platformName.trim(),
+        url: l.url.trim(),
+        isVisible: l.isVisible !== undefined ? l.isVisible : true
+      }));
 
     const putPayload = {
       fullName: editName.trim(),
@@ -83,9 +89,8 @@ export default function ProfilePage() {
       toast.success('Məlumatlar yeniləndi');
       setEditOpen(false);
 
-      // Vacib hissə: Uğurlu olduqdan sonra datanı yenidən çəkirik (və ya state-i əl ilə yeniləyirik)
+      // Vacib hissə: Uğurlu olduqdan sonra datanı yenidən çəkirik
       fetchProfileData();
-      // Və ya sadəcə: setProfile({ ...profile!, ...putPayload });
     } catch (error: any) {
       toast.error(error?.response?.data?.detail || 'Yeniləmə alınmadı');
       console.error(error);
@@ -103,7 +108,6 @@ export default function ProfilePage() {
       setUploadingImage(true);
       const imageUrl = await profileService.uploadProfileImage(file);
 
-      // State-i yeniləyirik ki, şəkil dərhal görünsün
       if (profile) {
         setProfile({ ...profile, profileImageUrl: imageUrl });
       }
@@ -117,9 +121,9 @@ export default function ProfilePage() {
   };
 
   // Helper funksiyalar
-  const addLink = () => setEditLinks((prev) => [...prev, { platformName: '', url: '' }]);
+  const addLink = () => setEditLinks((prev) => [...prev, { id: 0, platformName: '', url: '', isVisible: true }]);
   const removeLink = (idx: number) => setEditLinks((prev) => prev.filter((_, i) => i !== idx));
-  const updateLink = (idx: number, key: keyof SocialLink, value: string) =>
+  const updateLink = (idx: number, key: keyof SocialLink, value: string | boolean) =>
     setEditLinks((prev) => prev.map((l, i) => i === idx ? { ...l, [key]: value } : l));
 
   if (loading) {
@@ -210,10 +214,31 @@ export default function ProfilePage() {
 
             {/* Link Edit Loop */}
             {editLinks.map((link, idx) => (
-              <Box key={idx} display="flex" gap={1}>
-                <TextField label="Platforma" value={link.platformName} onChange={(e) => updateLink(idx, 'platformName', e.target.value)} />
-                <TextField label="URL" value={link.url} onChange={(e) => updateLink(idx, 'url', e.target.value)} fullWidth />
-                <IconButton onClick={() => removeLink(idx)}><DeleteIcon /></IconButton>
+              <Box key={idx} display="flex" gap={1} alignItems="center">
+                <TextField
+                  label="Platforma"
+                  value={link.platformName}
+                  onChange={(e) => updateLink(idx, 'platformName', e.target.value)}
+                  sx={{ width: '30%' }}
+                />
+                <TextField
+                  label="URL"
+                  value={link.url}
+                  onChange={(e) => updateLink(idx, 'url', e.target.value)}
+                  fullWidth
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={link.isVisible !== false}
+                      onChange={(e) => updateLink(idx, 'isVisible', e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label={link.isVisible !== false ? "Visible" : "Hidden"}
+                  sx={{ mr: 0 }}
+                />
+                <IconButton onClick={() => removeLink(idx)} color="error"><DeleteIcon /></IconButton>
               </Box>
             ))}
             <Button startIcon={<AddIcon />} onClick={addLink}>Əlavə et</Button>

@@ -3,6 +3,7 @@ import axiosClient from '../api/axiosClient';
 const api = import.meta.env.VITE_API_URL;
 
 export interface SocialLink {
+  id?: number;
   platformName: string;
   url: string;
   isVisible: boolean;
@@ -19,6 +20,7 @@ export interface UserProfile {
 export interface UpdateProfileRequest {
   fullName: string;
   phoneNumber: string;
+  socialMedia?: SocialLink[];
 }
 
 export interface UploadProfileImageResponse {

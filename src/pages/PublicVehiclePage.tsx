@@ -88,49 +88,39 @@ export default function PublicVehiclePage() {
 
   if (loading) {
     return (
-      <>
-        <PublicHeader />
-        <Container maxWidth="md" sx={{ mt: 8, display: 'flex', justifyContent: 'center' }}>
-          <CircularProgress size={60} sx={{ color: '#667eea' }} />
-        </Container>
-      </>
+      <Box sx={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <CircularProgress size={40} sx={{ color: '#667eea' }} />
+      </Box>
     );
   }
 
-  console.log(vehicle)
-
   if (!vehicle) {
     return (
-      <>
-        <PublicHeader />
-        <Container maxWidth="md" sx={{ mt: 8, textAlign: 'center' }}>
-          <Paper sx={{ p: 4, borderRadius: 4 }}>
-            <Typography variant="h5" color="error">
-              Avtomobil məlumatları tapılmadı
-            </Typography>
-          </Paper>
-        </Container>
-      </>
+      <Box sx={{ minHeight: '100vh', background: '#f5f5f5', p: 3, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Paper elevation={0} sx={{ p: 4, borderRadius: 4, textAlign: 'center', width: '100%' }}>
+          <DirectionsCarFilledIcon sx={{ fontSize: 60, color: '#bdbdbd', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary">
+            Avtomobil tapılmadı
+          </Typography>
+        </Paper>
+      </Box>
     );
   }
 
   const getPlatformIcon = (platformName: string) => {
     const name = platformName.toLowerCase();
-
     switch (name) {
       case 'instagram': return <InstagramIcon />;
       case 'facebook': return <FacebookIcon />;
       case 'linkedin': return <LinkedInIcon />;
-      case 'twitter':
-      case 'x': return <TwitterIcon />;
+      case 'twitter': case 'x': return <TwitterIcon />;
       case 'telegram': return <TelegramIcon />;
       case 'whatsapp': return <WhatsAppIcon />;
       case 'youtube': return <YouTubeIcon />;
-      default: return <LanguageIcon />; // Tanınmayanlar üçün qlobus ikonu
+      default: return <LanguageIcon />;
     }
   };
 
-  // İkon rənglərini təyin etmək üçün (İstəyə bağlı)
   const getPlatformColor = (platformName: string) => {
     const name = platformName.toLowerCase();
     switch (name) {
@@ -146,263 +136,198 @@ export default function PublicVehiclePage() {
   };
 
   return (
-    <>
-      <PublicHeader />
+    <Box sx={{ minHeight: '100vh', background: '#f8f9fa', pb: 10 }}>
+      {/* 1. Hero / Header Image - Full Width */}
       <Box
         sx={{
-          minHeight: 'calc(100vh - 64px)',
-          background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
-          pt: 6,
-          pb: 6
+          height: '35vh',
+          width: '100%',
+          position: 'relative',
+          overflow: 'hidden',
+          background: vehicle.imageUrl ? '#000' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
         }}
       >
-        <Container maxWidth="md">
-          <Paper
+        {vehicle.imageUrl ? (
+          <Box
+            component="img"
+            src={vehicle.imageUrl}
             sx={{
-              p: 6,
-              borderRadius: 4,
-              background: '#fff',
-              boxShadow: '0 12px 40px rgba(102, 126, 234, 0.15)'
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: 0.9
             }}
-          >
-            {/* Header */}
-            <Box sx={{ textAlign: 'center', mb: 6 }}>
-              {vehicle.imageUrl && (
-                <Box
-                  sx={{
-                    mb: 3,
-                    display: 'flex',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={vehicle.imageUrl}
-                    alt={`${vehicle.make} ${vehicle.model}`}
-                    sx={{
-                      maxWidth: '100%',
-                      maxHeight: 220,
-                      borderRadius: 3,
-                      objectFit: 'cover',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.35)'
-                    }}
-                  />
-                </Box>
-              )}
-              {!vehicle.imageUrl && (
-                <DirectionsCarFilledIcon
-                  sx={{
-                    fontSize: 100,
-                    color: '#667eea',
-                    mb: 3
-                  }}
-                />
-              )}
-              <Typography
-                variant="h3"
-                fontWeight="bold"
-                gutterBottom
-                sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
-                }}
-              >
-                {vehicle.make} {vehicle.model}
-              </Typography>
-              <Chip
-                label={vehicle.licensePlate}
-                sx={{
-                  mt: 2,
-                  fontSize: '1.2rem',
-                  fontWeight: 'bold',
-                  height: 40,
-                  px: 2,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: '#fff'
-                }}
-              />
-            </Box>
+          />
+        ) : (
+          <Box sx={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <DirectionsCarFilledIcon sx={{ fontSize: 80, color: 'rgba(255,255,255,0.3)' }} />
+          </Box>
+        )}
 
-            {/* Vehicle Details */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mb: 4 }}>
-              <Card
-                variant="outlined"
-                sx={{
-                  p: 3,
-                  borderRadius: 3,
-                  border: '1px solid rgba(102, 126, 234, 0.2)',
-                  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)'
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <ConfirmationNumberIcon sx={{ color: '#fff', fontSize: 28 }} />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Dövlət Nömrə Nişanı
-                    </Typography>
-                    <Typography variant="h6" fontWeight="bold" color="#667eea">
-                      {vehicle.licensePlate}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Card>
+        {/* Overlay Gradient at bottom for text readability */}
+        <Box
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '60%',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)'
+          }}
+        />
 
-              <Card
-                variant="outlined"
-                sx={{
-                  p: 3,
-                  borderRadius: 3,
-                  border: '1px solid rgba(102, 126, 234, 0.2)',
-                  background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)'
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <DriveEtaIcon sx={{ color: '#fff', fontSize: 28 }} />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Marka və Model
-                    </Typography>
-                    <Typography variant="h6" fontWeight="bold" color="#667eea">
-                      {vehicle.make} {vehicle.model}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Card>
-
-              {vehicle.color && (
-                <Card
-                  variant="outlined"
-                  sx={{
-                    p: 3,
-                    borderRadius: 3,
-                    border: '1px solid rgba(102, 126, 234, 0.2)',
-                    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)'
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box
-                      sx={{
-                        p: 1.5,
-                        borderRadius: 2,
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <PaletteIcon sx={{ color: '#fff', fontSize: 28 }} />
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Rəng
-                      </Typography>
-                      <Typography variant="h6" fontWeight="bold" color="#667eea">
-                        {vehicle.color}
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Card>
-              )}
-            </Box>
-
-            {/* Contact Section */}
-            {vehicle.contactNumber && (
-              <Box sx={{ textAlign: 'center', pt: 4, borderTop: '2px solid rgba(102, 126, 234, 0.2)' }}>
-                <Typography variant="h6" fontWeight="bold" gutterBottom mb={3}>
-                  Əlaqə Məlumatları
-                </Typography>
-                <Button
-                  variant="contained"
-                  size="large"
-                  href={`tel:${vehicle.contactNumber}`}
-                  sx={{
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-                      boxShadow: '0 6px 20px rgba(102, 126, 234, 0.6)',
-                      transform: 'translateY(-2px)'
-                    },
-                    transition: 'all 0.3s ease'
-                  }}
-                >
-                  <PhoneIcon sx={{ mr: 1 }} />
-                  {vehicle.contactNumber}
-                </Button>
-                <Box>
-                </Box>
-                {vehicle.socialMediaLinks && vehicle.socialMediaLinks.length > 0 && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      gap: 2,
-                      flexWrap: 'wrap',
-                      mt: 2
-                    }}
-                  >
-                    {vehicle.socialMediaLinks.map((social, index) => (
-                      <Tooltip key={index} title={social.platformName} arrow>
-                        <IconButton
-                          component="a"
-                          href={social.url}
-                          target='_blank'
-                          rel='noopener noreferrer'
-                          sx={{
-                            color: getPlatformColor(social.platformName),
-                            backgroundColor: 'rgba(255,255,255,0.8)',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-                            border: `1px solid ${getPlatformColor(social.platformName)}`,
-                            width: 48,
-                            height: 48,
-                            transition: 'all 0.3s ease',
-                            '&:hover': {
-                              backgroundColor: getPlatformColor(social.platformName),
-                              color: '#fff',
-                              transform: 'translateY(-3px)',
-                              boxShadow: '0 6px 15px rgba(0,0,0,0.2)'
-                            }
-                          }}
-                        >
-                          {getPlatformIcon(social.platformName)}
-                        </IconButton>
-                      </Tooltip>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            )}
-          </Paper>
-        </Container>
+        <Box sx={{ position: 'absolute', bottom: 20, left: 20, right: 20 }}>
+          <Chip
+            label={vehicle.licensePlate}
+            sx={{
+              background: 'rgba(255,255,255,0.2)',
+              backdropFilter: 'blur(10px)',
+              color: '#fff',
+              fontWeight: 'bold',
+              mb: 1,
+              border: '1px solid rgba(255,255,255,0.3)'
+            }}
+          />
+          <Typography variant="h4" fontWeight="800" color="#fff" sx={{ textShadow: '0 2px 10px rgba(0,0,0,0.3)' }}>
+            {vehicle.make} {vehicle.model}
+          </Typography>
+        </Box>
       </Box>
-    </>
+
+      {/* 2. Content Container - Overlapping Card Style */}
+      <Container maxWidth="sm" sx={{ mt: -3, position: 'relative', zIndex: 2, px: 2 }}>
+
+        {/* Driver Card */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2.5,
+            borderRadius: 4,
+            mb: 2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.05)'
+          }}
+        >
+          <Box sx={{ position: 'relative' }}>
+            <Box
+              component="img"
+              src={vehicle.userProfilePictureUrl || "https://ui-avatars.com/api/?name=" + (vehicle.userFullName || "Driver") + "&background=random"}
+              sx={{
+                width: 60,
+                height: 60,
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '3px solid #f8f9fa'
+              }}
+            />
+            <Box
+              sx={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: 16,
+                height: 16,
+                background: '#4caf50',
+                borderRadius: '50%',
+                border: '2px solid #fff'
+              }}
+            />
+          </Box>
+          <Box>
+            <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'uppercase', fontSize: '0.7rem', fontWeight: 600, letterSpacing: 0.5 }}>
+              Sürücü
+            </Typography>
+            <Typography variant="h6" fontWeight="bold">
+              {vehicle.userFullName || "İstifadəçi"}
+            </Typography>
+          </Box>
+        </Paper>
+
+        {/* Vehicle Specs Grid */}
+        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
+          <Paper elevation={0} sx={{ p: 2, borderRadius: 3, background: '#fff' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, color: '#667eea' }}>
+              <ConfirmationNumberIcon fontSize="small" />
+              <Typography variant="caption" fontWeight="bold">Nömrə</Typography>
+            </Box>
+            <Typography variant="body1" fontWeight="600">{vehicle.licensePlate}</Typography>
+          </Paper>
+
+          <Paper elevation={0} sx={{ p: 2, borderRadius: 3, background: '#fff' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5, color: '#667eea' }}>
+              <PaletteIcon fontSize="small" />
+              <Typography variant="caption" fontWeight="bold">Rəng</Typography>
+            </Box>
+            <Typography variant="body1" fontWeight="600">{vehicle.color || "-"}</Typography>
+          </Paper>
+        </Box>
+
+        {/* Social Media Links */}
+        {vehicle.socialMediaLinks && vehicle.socialMediaLinks.length > 0 && (
+          <Box mb={4}>
+            <Typography variant="subtitle2" fontWeight="bold" gutterBottom sx={{ px: 1 }}>Sosial Hesablar</Typography>
+            <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+              {vehicle.socialMediaLinks.map((social, index) => (
+                <IconButton
+                  key={index}
+                  component="a"
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    background: '#fff',
+                    color: getPlatformColor(social.platformName),
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                    width: 50,
+                    height: 50,
+                    '&:hover': { transform: 'translateY(-2px)' }
+                  }}
+                >
+                  {getPlatformIcon(social.platformName)}
+                </IconButton>
+              ))}
+            </Box>
+          </Box>
+        )}
+
+      </Container>
+
+      {/* Sticky Bottom Call Action */}
+      <Paper
+        elevation={10}
+        sx={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          p: 2,
+          borderTopLeftRadius: 20,
+          borderTopRightRadius: 20,
+          background: '#fff',
+          zIndex: 100
+        }}
+      >
+        <Button
+          fullWidth
+          variant="contained"
+          size="large"
+          href={`tel:${vehicle.contactNumber}`}
+          sx={{
+            borderRadius: 3,
+            py: 1.5,
+            fontSize: '1.1rem',
+            fontWeight: 'bold',
+            background: 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)', // Green gradient for call
+            boxShadow: '0 4px 15px rgba(56, 239, 125, 0.4)'
+          }}
+          startIcon={<PhoneIcon />}
+        >
+          Zəng Et
+        </Button>
+      </Paper>
+    </Box>
   );
 }
 

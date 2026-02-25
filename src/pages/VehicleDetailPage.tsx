@@ -23,10 +23,12 @@ import DriveEtaIcon from '@mui/icons-material/DriveEta';
 import PaletteIcon from '@mui/icons-material/Palette';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditVehicleDialog from '../components/EditVehicleDialog';
 
 export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const numericId = id ? Number(id) : undefined;
   const navigate = useNavigate();
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [loading, setLoading] = useState(true);
@@ -40,7 +42,7 @@ export default function VehicleDetailPage() {
 
   useEffect(() => {
     const fetchVehicle = async () => {
-      if (!id) {
+      if (!numericId || isNaN(numericId)) {
         toast.error('Avtomobil ID-si tapılmadı');
         navigate('/');
         return;
@@ -48,7 +50,7 @@ export default function VehicleDetailPage() {
 
       try {
         setLoading(true);
-        const data = await vehicleService.getById(id);
+        const data = await vehicleService.getById(numericId);
         setVehicle(data);
       } catch (error: any) {
         toast.error(error.response?.data?.detail || 'Avtomobil məlumatları yüklənə bilmədi');
@@ -59,15 +61,15 @@ export default function VehicleDetailPage() {
     };
 
     fetchVehicle();
-  }, [id, navigate]);
+  }, [numericId, navigate]);
 
   const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !id || !vehicle) return;
+    if (!file || !numericId || !vehicle) return;
 
     try {
       setUploadingImage(true);
-      const url = await vehicleService.uploadImage(id, file);
+      const url = await vehicleService.uploadImage(String(numericId), file);
       if (url) {
         setVehicle({ ...vehicle, imageUrl: url });
         toast.success('Avtomobil şəkli yeniləndi');
@@ -90,6 +92,20 @@ export default function VehicleDetailPage() {
 
   const handleVehicleUpdated = (updatedVehicle: Vehicle) => {
     setVehicle(updatedVehicle); // UI-ı dərhal yenilə
+  };
+
+  const handleDelete = async () => {
+    if (!numericId) return;
+    const confirmed = window.confirm('Bu avtomobili silmək istədiyinizə əminsiniz?');
+    if (!confirmed) return;
+
+    try {
+      await vehicleService.delete(numericId);
+      toast.success('Avtomobil uğurla silindi');
+      navigate('/dashboard');
+    } catch (error: any) {
+      toast.error(error.response?.data?.detail || 'Avtomobili silmək mümkün olmadı');
+    }
   };
 
   if (loading) return <Navbar />; // Sadələşdirmə
@@ -136,6 +152,22 @@ export default function VehicleDetailPage() {
 
               <Button variant="outlined" onClick={openEditDialog}>
                 Məlumatları Dəyiş
+              </Button>
+
+              <Button
+                variant="contained"
+                startIcon={<DeleteIcon />}
+                onClick={handleDelete}
+                sx={{
+                  background: 'linear-gradient(45deg, #f44336 30%, #e57373 90%)',
+                  boxShadow: '0 3px 5px 2px rgba(244, 67, 54, .3)',
+                  color: 'white',
+                  '&:hover': {
+                    background: 'linear-gradient(45deg, #d32f2f 30%, #f44336 90%)',
+                  }
+                }}
+              >
+                Sil
               </Button>
             </Box>
           )}

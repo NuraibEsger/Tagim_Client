@@ -19,4 +19,17 @@ axiosClient.interceptors.request.use((config) => {
   return config;
 });
 
+import { logout } from '../store/slices/authSlice';
+
+axiosClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      store.dispatch(logout());
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default axiosClient;

@@ -1,11 +1,11 @@
 import axiosClient from '../api/axiosClient';
 
 export interface CreateVehicleRequest {
-    licensePlate: string;
-    make: string;     
-    model: string;
-    color: string;
-    contactNumber: string;
+  licensePlate: string;
+  make: string;
+  model: string;
+  color: string;
+  contactNumber: string;
 }
 
 export interface UpdateVehicleRequest {
@@ -18,7 +18,7 @@ export interface UpdateVehicleRequest {
 }
 
 export interface Vehicle {
-  id: string;
+  id: number;
   publicId: string;
   licensePlate: string;
   make: string;
@@ -53,41 +53,45 @@ const normalizeVehicle = (vehicle: Vehicle): Vehicle => {
 };
 
 export const vehicleService = {
-    create: async (data: CreateVehicleRequest) => {
-      const response = await axiosClient.post('/Vehicles', data);
-      return response.data;
-    },
+  create: async (data: CreateVehicleRequest) => {
+    const response = await axiosClient.post('/Vehicles', data);
+    return response.data;
+  },
 
-    update: async (data: UpdateVehicleRequest) => {
-      const response = await axiosClient.put('/Vehicles', data);
-      return response.data;
-    },
-    getAll: async (): Promise<Vehicle[]> => {
-      const response = await axiosClient.get('/Vehicles');
-      return (response.data as Vehicle[]).map(normalizeVehicle);
-    },
-    getById: async (id: string): Promise<Vehicle> => {
-      const response = await axiosClient.get(`/Vehicles/${id}`);
-      return normalizeVehicle(response.data as Vehicle);
-    },
+  update: async (data: UpdateVehicleRequest) => {
+    const response = await axiosClient.put('/Vehicles', data);
+    return response.data;
+  },
+  getAll: async (): Promise<Vehicle[]> => {
+    const response = await axiosClient.get('/Vehicles');
+    return (response.data as Vehicle[]).map(normalizeVehicle);
+  },
+  getById: async (id: number): Promise<Vehicle> => {
+    const response = await axiosClient.get(`/Vehicles/${id}`);
+    return normalizeVehicle(response.data as Vehicle);
+  },
 
-    uploadImage: async (vehicleId: string, file: File): Promise<string> => {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('vehicleId', vehicleId);
+  delete: async (id: number): Promise<void> => {
+    await axiosClient.delete(`/Vehicles/${id}`);
+  },
 
-      const response = await axiosClient.post<{ imageUrl: string }>('/Vehicles/upload-image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+  uploadImage: async (vehicleId: string, file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('vehicleId', vehicleId);
 
-      const imageUrl = response.data.imageUrl;
-      if (!imageUrl) return '';
+    const response = await axiosClient.post<{ imageUrl: string }>('/Vehicles/upload-image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
 
-      // Əgər backend nisbi yol (/uploads/...) qaytarırsa, tam URL-ə çeviririk.
-      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-        return imageUrl;
-      }
+    const imageUrl = response.data.imageUrl;
+    if (!imageUrl) return '';
 
-      return backendOrigin + imageUrl;
+    // Əgər backend nisbi yol (/uploads/...) qaytarırsa, tam URL-ə çeviririk.
+    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+      return imageUrl;
     }
-  }; 
+
+    return backendOrigin + imageUrl;
+  }
+}; 

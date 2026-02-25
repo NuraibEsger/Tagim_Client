@@ -47,7 +47,7 @@ interface PublicVehicle {
   socialMediaLinks: SocialMediaLink[];
 }
 
-const backendOrigin = 'http://localhost:8080';
+const backendOrigin = import.meta.env.VITE_API_URL;
 
 export default function PublicVehiclePage() {
   const { id } = useParams<{ id: string }>();
